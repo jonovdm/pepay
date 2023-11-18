@@ -8,8 +8,11 @@ import { Test } from "@forge-std/Test.sol";
 import { WebAuthnAccountFactory } from "../src/Accounts/WebAuthnAccountFactory.sol";
 import { Paymaster } from "../src/Paymaster/Paymaster.sol";
 import { BaseScript } from "./Base.s.sol";
+import { MockERC20 } from "../src/Mock/MockERC20.sol";
 
 contract DeployAnvil is BaseScript, Test {
+    MockERC20 mockUSDC;
+
     function run() external broadcast returns (address[4] memory) {
         // deploy the library contract and return the address
         EntryPoint entryPoint = new EntryPoint();
@@ -17,8 +20,17 @@ contract DeployAnvil is BaseScript, Test {
 
         address webAuthnAddr = address(new WebAuthn256r1());
         console2.log("webAuthn", webAuthnAddr);
+        //allowance module setup
+        mockUSDC = new MockERC20("mockUSDC", "USDC", 100 ether, 18);
+        // address[] memory tokens = new address[](1);
+        // uint256[] memory allowances = new uint256[](1);
+        // tokens[0] = address(mockUSDC);
+        // allowances[0] = 100 ether;
+        address token = address(mockUSDC);
+        uint256 allowance = 100 ether;
+
         WebAuthnAccountFactory webAuthnAccountFactory =
-            new WebAuthnAccountFactory(entryPoint, webAuthnAddr, 0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65);
+        new WebAuthnAccountFactory(entryPoint, webAuthnAddr, 0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65, token, allowance);
 
         console2.log("webAuthnAccountFactory", address(webAuthnAccountFactory));
 
