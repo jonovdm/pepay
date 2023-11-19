@@ -15,26 +15,26 @@ const headers = { Authorization: `Bearer ${oneInchKey}`, accept: "application/js
 const headers2 = { Authorization: `Bearer ${oneInchKey}`, "Content-Type": "application/json" }
 const web3 = new Web3(web3RpcUrl);
 
-async function getNonce() {
+export async function getNonce() {
     let nonce = await web3.eth.getTransactionCount(walletAddress, 'pending')
     nonce = nonce.toString() // Convert from BIGINT to string. tx.nonce will not work if Number()
     // console.log({ nonce });
     return nonce
 }
 
-function apiRequestUrl(methodName, queryParams) {
+export function apiRequestUrl(methodName, queryParams) {
     const url = apiBaseUrl + methodName + "?" + new URLSearchParams(queryParams).toString();
     // console.log('API Request URL:', url); // Log the URL
     return url;
 }
 
-async function checkAllowance(tokenAddress, walletAddress) {
+export async function checkAllowance(tokenAddress, walletAddress) {
     const response = await fetch(apiRequestUrl("/approve/allowance", { tokenAddress, walletAddress }), { headers });
     const jsonResponse = await response.json();
     return jsonResponse.allowance;
 }
 
-async function buildTxForApproveTradeWithRouter(tokenAddress, amount) {
+export async function buildTxForApproveTradeWithRouter(tokenAddress, amount) {
     const url = apiRequestUrl(
         "/approve/transaction",
         amount ? { tokenAddress, amount } : { tokenAddress }
@@ -52,7 +52,7 @@ async function buildTxForApproveTradeWithRouter(tokenAddress, amount) {
     };
 }
 
-async function signTransaction(transaction) {
+export async function signTransaction(transaction) {
     const { rawTransaction } = await web3.eth.accounts.signTransaction(
         transaction,
         privateKey
@@ -61,7 +61,7 @@ async function signTransaction(transaction) {
     return rawTransaction
 }
 
-async function sendSignedTransaction(rawTransaction) {
+export async function sendSignedTransaction(rawTransaction) {
     let resp = fetch(broadcastApiUrl, {
         method: "post",
         body: JSON.stringify({ rawTransaction }),
@@ -73,7 +73,7 @@ async function sendSignedTransaction(rawTransaction) {
     return resp.transactionHash || resp;
 }
 
-async function buildTxForSwap(swapParams) {
+export async function buildTxForSwap(swapParams) {
     const url = apiRequestUrl("/swap", swapParams);
 
     // Fetch the swap transaction details from the API
@@ -81,21 +81,3 @@ async function buildTxForSwap(swapParams) {
         .then((res) => res.json())
         .then((res) => { console.log(res); return res.tx });
 }
-
-const main = async () => {
-    const exampleParams = {
-        src: '0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270',
-        dst: '0x2791bca1f2de4661ed88a30c99a7a9449aa84174',
-        amount: "10000000000000000", //0.01 Matic
-        from: walletAddress,
-        slippage: 1, // Maximum acceptable slippage percentage for the swap (e.g., 1 for 1%)
-    };
-    const allowTx = await buildTxForApproveTradeWithRouter(exampleParams.src)
-    console.log(allowTx)
-    const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-    await sleep(1000);
-    const swapTx = await buildTxForSwap(exampleParams)
-    console.log(swapTx)
-}
-
-main()

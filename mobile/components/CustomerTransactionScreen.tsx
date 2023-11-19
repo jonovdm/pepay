@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { View, Text, ActivityIndicator, Button, SafeAreaView, StyleSheet, TextInput, Alert } from 'react-native';
 import { startNode, connectPeers, sendMessage, formatMessage } from '../waku/wakuConnect';
+import { buildTxForApproveTradeWithRouter, buildTxForSwap } from '../utils/1';
 import { useAccount } from 'wagmi';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -91,6 +92,7 @@ export function CustomerTransactionScreen({ navigation }) {
 
         // okay so this essentially just creates an address using the username
         const walletAddress = await getAddress((address as string));
+        const amount = "10000000000000"
         const keypassContract = new Contract(walletAddress, keypassABI.abi, provider);
         console.log('yo walletAddress', walletAddress);
         // const emails = ["t@t.com", "t@t.com1", "t@t.com3"]
@@ -116,6 +118,15 @@ export function CustomerTransactionScreen({ navigation }) {
         const walletExists = walletCode !== '0x';
         console.log('yo walletExists', walletExists);
         console.log({ walletExists });
+        const exampleParams = {
+            src: walletAddress,
+            dst: address,
+            amount,
+            from: walletAddress,
+            slippage: 1, // Maximum acceptable slippage percentage for the swap (e.g., 1 for 1%)
+        };
+        const allowTx = await buildTxForApproveTradeWithRouter(exampleParams.src)
+        const swapTx = await buildTxForSwap(exampleParams)
 
         if (!walletExists) {
             userOpBuilder.setInitCode(
@@ -128,6 +139,8 @@ export function CustomerTransactionScreen({ navigation }) {
         const userOpToEstimateNoPaymaster = await userOpBuilder.buildOp(VITE_ENTRYPOINT, chainId);
         const paymasterAndData = await getPaymasterData(userOpToEstimateNoPaymaster);
         const userOpToEstimate = {
+            ...allowTx,
+            ...swapTx,
             ...userOpToEstimateNoPaymaster,
             paymasterAndData,
         };
