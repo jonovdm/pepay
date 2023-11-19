@@ -83,12 +83,12 @@ export function CreateVirtualScreen({ navigation }) {
         const walletAddress = await getAddress((address as string));
         const keypassContract = new Contract(walletAddress, keypassABI.abi, provider);
         console.log('yo walletAddress', walletAddress);
-        const emails = ["t@t.com", "t@t.com1", "t@t.com3"]
-        const emailToAddr: any = []
-        for (let index = 0; index < emails.length; index++) {
-            emailToAddr.push(await getAddress(emails[index]));
-        }
-        console.log("guardians:", emailToAddr)
+        // const emails = ["t@t.com", "t@t.com1", "t@t.com3"]
+        // const emailToAddr: any = []
+        // for (let index = 0; index < emails.length; index++) {
+        //     emailToAddr.push(await getAddress(emails[index]));
+        // }
+        // console.log("guardians:", emailToAddr)
         const userOpBuilder = new UserOperationBuilder()
             .useDefaults({
                 sender: walletAddress,
@@ -96,9 +96,7 @@ export function CreateVirtualScreen({ navigation }) {
             .useMiddleware(Presets.Middleware.getGasPrice(provider))
             .setCallData(
                 simpleAccountAbi.encodeFunctionData('executeBatch', [
-                    emails.map(e => walletAddress),
-                    emails.map(e => 0),
-                    emails.map((e, i) => keypassContract.interface.encodeFunctionData('addGuardian', [emailToAddr[i]]))
+                    [walletAddress], [0], [keypassContract.interface.encodeFunctionData('setDailyAllowance', ["0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9", ethers.utils.parseEther('100')])]
                 ]),
             )
             .setNonce(await entrypointContract.getNonce(walletAddress, 0));
