@@ -13,8 +13,6 @@ import { getAddress, getGasLimits, getPaymasterData, sendUserOp, signUserOp, sig
 import { Contract, ethers } from 'ethers';
 import { provider } from '../utils/providers';
 import { Passkey } from "react-native-passkey";
-// import { decode as atob, encode as btoa } from 'base-64'
-// import base64url from 'base64url'
 import keypassABI from '../abis/keypass.json';
 import { entrypointContract, simpleAccountAbi, walletFactoryContract } from '../utils/contracts';
 import { VITE_ENTRYPOINT } from '../utils/constants';
@@ -58,8 +56,8 @@ export function CreateVirtualScreen({ navigation }) {
             await handleSign(optionsResponse)
             if (verifyRes.status === 200) {
                 // Alert.alert("All good", "success!");
-                //@todo approve
-                navigation.navigate('Home');
+                // //@todo approve
+                // navigation.navigate('Home');
             }
         } catch (error) {
             // console.log("error")
@@ -169,16 +167,8 @@ export function CreateVirtualScreen({ navigation }) {
                 setTransactionHash(receipt.hash);
                 setTransactionStatus('confirmed');
                 console.log({ receipt });
-                // const guardians = localStorage.getItem("guardians");
-                // const guardiansObj = guardians?.length ? JSON.parse(guardians) : {};
-                // emails.forEach(e => {
-                //     guardiansObj[login] = guardiansObj[login] || {};
-                //     guardiansObj[login].guardians = guardiansObj[login].guardians || [];
-                //     guardiansObj[login].guardians.push(e)
-                // })
-                // localStorage.setItem("guardians", JSON.stringify(guardiansObj));
-                // console.log("guardian count:", await keypassContract.functions.guardianCount())
-                // navigate("/account");
+                //@todo approve
+                navigation.navigate('Home');
             })
             .catch((e: any) => {
                 setTransactionStatus('error');
